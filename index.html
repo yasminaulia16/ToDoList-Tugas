@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduTask - To-Do List Tugas Sekolah</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Comic Neue', 'Segoe UI', cursive;
+    }
+
+    :root {
+      --color-1: #FF6B8B;
+      --color-2: #6C63FF;
+      --color-3: #4ECDC4;
+      --color-4: #FFD166;
+      --color-5: #A78BFA;
+      --color-6: #FF9E6D;
+    }
+
+    body {
+      background: linear-gradient(-45deg, #FF6B8B, #6C63FF, #4ECDC4, #FFD166);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 30px;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      transition: transform 0.5s ease, box-shadow 0.5s ease;
+    }
+
+    .container:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+      transform: rotate(45deg);
+      animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .floating-elements {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .floating-element {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+      animation: float 15s infinite linear;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 100px;
+      height: 100px;
+      background: var(--color-1);
+      top: 10%;
+      left: 5%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 150px;
+      height: 150px;
+      background: var(--color-2);
+      top: 60%;
+      left: 80%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 80px;
+      height: 80px;
+      background: var(--color-3);
+      top: 20%;
+      left: 85%;
+      animation-delay: -4s;
+    }
+
+    .floating-element:nth-child(4) {
+      width: 120px;
+      height: 120px;
+      background: var(--color-4);
+      top: 70%;
+      left: 10%;
+      animation-delay: -6s;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+      100% { transform: translateY(0) rotate(360deg); }
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--color-1), var(--color-2));
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      animation: bounce 2s infinite alternate;
+    }
+
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-10px); }
+    }
+
+    .logo i {
+      color: white;
+      font-size: 36px;
+    }
+
+    .header-text h1 {
+      font-size: 32px;
+      background: linear-gradient(135deg, var(--color-1), var(--color-2), var(--color-3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-text p {
+      color: #666;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+
+    .form-container {
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      position: relative;
+      z-index: 1;
+      transition: all 0.4s ease;
+      border: 2px dashed transparent;
+      background-clip: padding-box;
+    }
+
+    .form-container:hover {
+      transform: scale(1.02);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+      border: 2px dashed var(--color-3);
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 18px 20px 18px 50px;
+      border-radius: 15px;
+      border: 2px solid #e0e0e0;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--color-2);
+      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+      transform: translateY(-3px);
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-2);
+      font-size: 20px;
+    }
+
+    .add-btn {
+      background: linear-gradient(135deg, var(--color-1), var(--color-2));
+      color: white;
+      border: none;
+      padding: 18px 30px;
+      border-radius: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+      transition: all 0.4s ease;
+      box-shadow: 0 10px 20px rgba(108, 99, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .add-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: 0.5s;
+    }
+
+    .add-btn:hover::before {
+      left: 100%;
+    }
+
+    .add-btn:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 15px 30px rgba(108, 99, 255, 0.4);
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 25px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      margin: 0 10px;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:nth-child(1) {
+      background: linear-gradient(135deg, #FF6B8B, #FF9E6D);
+    }
+
+    .stat-card:nth-child(2) {
+      background: linear-gradient(135deg, #6C63FF, #A78BFA);
+    }
+
+    .stat-card:nth-child(3) {
+      background: linear-gradient(135deg, #4ECDC4, #96CEB4);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-10px) rotate(2deg);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
+    }
+
+    .task-list {
+      position: relative;
+      z-index: 1;
+    }
+
+    .task {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: all 0.5s ease;
+      position: relative;
+      overflow: hidden;
+      animation: slideIn 0.5s ease forwards;
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+
+    @keyframes slideIn {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .task:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .task::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 8px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--color-1), var(--color-2));
+    }
+
+    .task.completed {
+      opacity: 0.7;
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    }
+
+    .task.completed .task-content .title {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .task-check {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 3px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .task-check.checked {
+      background: var(--color-3);
+      border-color: var(--color-3);
+    }
+
+    .task-check.checked i {
+      color: white;
+      font-size: 14px;
+      opacity: 1;
+    }
+
+    .task-content {
+      flex: 1;
+    }
+
+    .task-subject {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-2);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .task-title {
+      font-size: 16px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .task-date {
+      font-size: 14px;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .task-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      color: white;
+      font-size: 16px;
+    }
+
+    .delete-btn {
+      background: linear-gradient(135deg, #FF6B8B, #FF9E6D);
+    }
+
+    .delete-btn:hover {
+      transform: scale(1.1) rotate(15deg);
+    }
+
+    .priority-btn {
+      background: linear-gradient(135deg, #FFD166, #FF9E6D);
+    }
+
+    .priority-btn:hover {
+      transform: scale(1.1) rotate(-15deg);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: #888;
+      position: relative;
+      z-index: 1;
+    }
+
+    .empty-state i {
+      font-size: 70px;
+      margin-bottom: 20px;
+      color: #d0d0d0;
+      animation: pulse 2s infinite;
+    }
+
+    .empty-state p {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .task-priority {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 20px;
+      color: white;
+    }
+
+    .priority-high {
+      background: linear-gradient(135deg, #FF6B8B, #FF9E6D);
+    }
+
+    .priority-medium {
+      background: linear-gradient(135deg, #FFD166, #FF9E6D);
+    }
+
+    .priority-low {
+      background: linear-gradient(135deg, #4ECDC4, #96CEB4);
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+      }
+      
+      .stats {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .stat-card {
+        margin: 0;
+      }
+      
+      .add-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .task {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .task-actions {
+        align-self: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="floating-elements">
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+    </div>
+    
+    <div class="header">
+      <div class="logo">
+        <i class="fas fa-graduation-cap"></i>
+      </div>
+      <div class="header-text">
+        <h1>EduTask</h1>
+        <p>Kelola tugas sekolah dengan cara yang menyenangkan!</p>
+      </div>
+    </div>
+
+    <div class="form-container">
+      <div class="input-group">
+        <i class="fas fa-book input-icon"></i>
+        <input type="text" id="subject" placeholder="Mata Pelajaran (contoh: Matematika, Fisika, dll)">
+      </div>
+      
+      <div class="input-group">
+        <i class="fas fa-pencil-alt input-icon"></i>
+        <input type="text" id="title" placeholder="Judul Tugas (contoh: Kerjakan latihan halaman 45)">
+      </div>
+      
+      <div class="input-group">
+        <i class="fas fa-calendar-alt input-icon"></i>
+        <input type="date" id="dueDate">
+      </div>
+      
+      <button class="add-btn" id="addTask">
+        <i class="fas fa-plus"></i> Tambah Tugas Baru
+      </button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalTasks">0</div>
+        <div class="stat-label">Total Tugas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="completedTasks">0</div>
+        <div class="stat-label">Selesai</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="pendingTasks">0</div>
+        <div class="stat-label">Belum Selesai</div>
+      </div>
+    </div>
+
+    <div class="task-list" id="taskList">
+      <!-- Tugas akan ditambahkan di sini -->
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const taskList = document.getElementById('taskList');
+      const addTaskBtn = document.getElementById('addTask');
+      const subjectInput = document.getElementById('subject');
+      const titleInput = document.getElementById('title');
+      const dueDateInput = document.getElementById('dueDate');
+      const totalTasksEl = document.getElementById('totalTasks');
+      const completedTasksEl = document.getElementById('completedTasks');
+      const pendingTasksEl = document.getElementById('pendingTasks');
+
+      let tasks = JSON.parse(localStorage.getItem('eduTasks')) || [];
+      
+      // Update stats
+      function updateStats() {
+        const total = tasks.length;
+        const completed = tasks.filter(task => task.completed).length;
+        const pending = total - completed;
+        
+        totalTasksEl.textContent = total;
+        completedTasksEl.textContent = completed;
+        pendingTasksEl.textContent = pending;
+        
+        // Simpan ke localStorage
+        localStorage.setItem('eduTasks', JSON.stringify(tasks));
+      }
+      
+      // Render tasks
+      function renderTasks() {
+        taskList.innerHTML = '';
+        
+        if (tasks.length === 0) {
+          taskList.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-clipboard-list"></i>
+              <p>Belum ada tugas. Yuk tambahkan tugas pertama!</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // Urutkan berdasarkan prioritas dan tanggal
+        tasks.sort((a, b) => {
+          const priorityOrder = { high: 1, medium: 2, low: 3 };
+          if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+            return priorityOrder[a.priority] - priorityOrder[b.priority];
+          }
+          return new Date(a.dueDate) - new Date(b.dueDate);
+        });
+        
+        tasks.forEach((task, index) => {
+          const taskItem = document.createElement('div');
+          taskItem.className = `task ${task.completed ? 'completed' : ''}`;
+          
+          // Format tanggal
+          const dueDate = new Date(task.dueDate);
+          const formattedDate = dueDate.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          
+          // Tentukan status berdasarkan tanggal
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          dueDate.setHours(0, 0, 0, 0);
+          
+          let dateStatus = '';
+          if (dueDate < today) {
+            dateStatus = ' (Terlambat)';
+          } else if (dueDate.getTime() === today.getTime()) {
+            dateStatus = ' (Hari Ini)';
+          }
+          
+          taskItem.innerHTML = `
+            <div class="task-check ${task.completed ? 'checked' : ''}" data-index="${index}">
+              <i class="fas fa-check"></i>
+            </div>
+            <div class="task-content">
+              <div class="task-subject">
+                <i class="fas fa-book"></i> ${task.subject}
+              </div>
+              <div class="task-title">${task.title}</div>
+              <div class="task-date">
+                <i class="far fa-calendar-alt"></i> ${formattedDate}${dateStatus}
+              </div>
+            </div>
+            <div class="task-actions">
+              <button class="task-btn priority-btn" data-index="${index}">
+                <i class="fas fa-flag"></i>
+              </button>
+              <button class="task-btn delete-btn" data-index="${index}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            <div class="task-priority priority-${task.priority}">
+              ${task.priority === 'high' ? 'Tinggi' : task.priority === 'medium' ? 'Sedang' : 'Rendah'}
+            </div>
+          `;
+          
+          taskList.appendChild(taskItem);
+        });
+        
+        // Tambahkan event listeners
+        document.querySelectorAll('.task-check').forEach(checkbox => {
+          checkbox.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            tasks[index].completed = !tasks[index].completed;
+            renderTasks();
+            updateStats();
+          });
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(button => {
+          button.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            
+            // Animasi penghapusan
+            const taskElement = this.closest('.task');
+            taskElement.style.transform = 'translateX(100%) rotate(30deg)';
+            taskElement.style.opacity = '0';
+            
+            setTimeout(() => {
+              tasks.splice(index, 1);
+              renderTasks();
+              updateStats();
+            }, 500);
+          });
+        });
+        
+        document.querySelectorAll('.priority-btn').forEach(button => {
+          button.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            const priorities = ['low', 'medium', 'high'];
+            const currentPriority = tasks[index].priority;
+            const currentIndex = priorities.indexOf(currentPriority);
+            const nextIndex = (currentIndex + 1) % priorities.length;
+            tasks[index].priority = priorities[nextIndex];
+            renderTasks();
+          });
+        });
+      }
+      
+      // Tambah tugas baru
+      addTaskBtn.addEventListener('click', function() {
+        const subject = subjectInput.value.trim();
+        const title = titleInput.value.trim();
+        const dueDate = dueDateInput.value;
+        
+        if (!subject || !title || !dueDate) {
+          alert('Harap isi semua field!');
+          return;
+        }
+        
+        tasks.push({
+          subject,
+          title,
+          dueDate,
+          completed: false,
+          priority: 'medium'
+        });
+        
+        // Reset form
+        subjectInput.value = '';
+        titleInput.value = '';
+        dueDateInput.value = '';
+        
+        renderTasks();
+        updateStats();
+      });
+      
+      // Inisialisasi
+      renderTasks();
+      updateStats();
+      
+      // Set tanggal minimum untuk input tanggal (hari ini)
+      const today = new Date().toISOString().split('T')[0];
+      dueDateInput.min = today;
+      dueDateInput.value = today;
+    });
+  </script>
+</body>
+</html>
